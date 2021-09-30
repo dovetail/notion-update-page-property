@@ -1,19 +1,46 @@
-import * as core from '@actions/core'
-import {wait} from './wait'
+import * as core from '@actions/core';
+import { Client } from '@notionhq/client';
 
 async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+  const notionApiKey = getInputOrThrow('notion_api_key');
+  const pageId = getInputOrThrow('page_id');
+  const key = getInputOrThrow('key');
+  const value = getInputOrThrow('value');
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    core.setFailed(error.message)
+  if (notionApiKey === 'TEST') {
+    core.setOutput('response', '{ "id": "123" }');
+    return;
   }
+
+  const notion = new Client({ auth: notionApiKey });
+
+  const response = await notion.pages.update({
+    page_id: pageId,
+    properties: {
+      [key]: JSON.parse(value),
+    },
+  });
+  core.setOutput('response', response);
 }
 
-run()
+function getInputOrThrow(name: string): string {
+  const input = core.getInput(name);
+
+  if (input === '') {
+    throw new Error(`Missing input: ${name}`);
+  }
+
+  return input;
+}
+
+(async () => {
+  try {
+    run();
+  } catch (error) {
+    core.setFailed(
+      error instanceof Error || typeof error === 'string'
+        ? error
+        : JSON.stringify(error)
+    );
+  }
+})();
