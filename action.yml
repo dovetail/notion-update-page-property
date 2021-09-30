@@ -1,11 +1,19 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'notion-update-page-property'
+description: 'Update a property on a notion page'
+author: 'dovetail'
 inputs:
-  milliseconds: # change this
+  notion_api_key:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Notion API Key'
+  page_id:
+    required: true
+    description: 'Identifier for a Notion page'
+  key:
+    required: true
+    description: 'Key of the property'
+  value:
+    required: true
+    description: 'Value for the property'
 runs:
   using: 'node12'
   main: 'dist/index.js'
